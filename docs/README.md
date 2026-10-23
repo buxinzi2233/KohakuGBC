@@ -1,5 +1,7 @@
 # KohakuGBC docs
 
+**English** | [简体中文](zh-CN/README.md)
+
 | Folder | What it holds |
 |---|---|
 | [concepts/](concepts/README.md) | what a GBC graph is, the program, the machine, the engines |

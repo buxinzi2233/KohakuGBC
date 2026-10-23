@@ -1,5 +1,7 @@
 # KohakuGBC
 
+**English** | [简体中文](README.zh-CN.md) · [中文文档](docs/zh-CN/README.md)
+
 [![arXiv](https://img.shields.io/badge/arXiv-2407.06723-b31b1b.svg)](https://arxiv.org/abs/2407.06723)
 [![ml-gbc](https://img.shields.io/badge/original-apple%2Fml--gbc-181717.svg?logo=github)](https://github.com/apple/ml-gbc)
 

@@ -1,5 +1,7 @@
 # kohakugbc-qwen35
 
+**English** | [简体中文](README.zh-CN.md)
+
 A VLM engine written for one model family, Qwen3.5 (2B, 4B, 9B), as KohakuGBC's `vlm` slot
 entry `qwen35`. It is an example of a specialised engine behind Togeari's stream contract: the
 machine sees the same unit as for vLLM or an API.
