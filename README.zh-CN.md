@@ -28,7 +28,7 @@
 pip install kohakugbc                 # 程序、执行机器、API 与回放引擎
 pip install "kohakugbc[torch]"        # 使用 torch 的检测器（OWLv2、SAM 3）与嵌入模型
 pip install "kohakugbc[vllm]"         # 通过 vLLM 在进程内运行 VLM（Linux）
-pip install -e examples/qwen35        # qwen35 引擎（Windows、Linux；需在克隆仓库中运行）
+pip install "kohakugbc[qwen35]"       # qwen35 VLM 引擎（Windows、Linux）
 ```
 
 Wheel 包包含 Rust 扩展 `kohakugbc._rs`（图解析）。如果从源代码克隆安装，则需要 Rust 工具链：
@@ -37,7 +37,7 @@ Wheel 包包含 Rust 扩展 `kohakugbc._rs`（图解析）。如果从源代码�
 git clone https://github.com/KohakuBlueleaf/KohakuGBC && cd KohakuGBC
 uv venv -p 3.13
 uv pip install -e ".[torch,dev]"      # 根据显卡驱动选择匹配的索引安装 torch
-uv pip install -e examples/qwen35
+uv pip install -e ".[torch,qwen35,dev]"
 gbc doctor
 ```
 
@@ -118,7 +118,7 @@ with machine:
 |---|---|---|
 | GBC 程序 | `kohakugbc.program`、`kohakugbc.nodes`、`kohakugbc.graph` | `gbc.kir`（单张图像任务）、`gbc` 节点库、控制项、记录和图解析（Python 参考实现，以及 `kohakugbc._rs` 中按摘要一致的 Rust 实现） |
 | GBC 执行机器 | `kohakugbc.machine`、`kohakugbc.io` | 在 Togeari 上执行程序：各引擎槽位的通道、绑定、准入、输入源、输出端、配置层 |
-| GBC 引擎 | `kohakugbc.engines`、`examples/qwen35` | 各槽位的引擎入口、部署规划、跨节点引擎、无需模型的回放引擎 |
+| GBC 引擎 | `kohakugbc.engines`、`kohakugbc_models` | 各槽位的引擎入口、部署规划、跨节点引擎、无需模型的回放引擎 |
 
 ### GBC 图
 
@@ -201,7 +201,7 @@ Togeari 像乱序 CPU 核心执行线程一样运行每张图像任务：一旦�
 
 | 槽位 | 节点 | 通道类型 | 入口 |
 |---|---|---|---|
-| `vlm` | `chat` | 流式单元 | `api`、`vllm`、`qwen35`（由 `examples/qwen35` 安装）、`replay`、`remote` |
+| `vlm` | `chat` | 流式单元 | `api`、`vllm`、`qwen35`（`qwen35` extra）、`replay`、`remote` |
 | `detect` | `detector` | 批处理单元 | `torch`（OWLv2 或 SAM 3）、`replay`、`remote` |
 | `embed` | `embedder` | 批处理单元 | `torch`（EmbeddingGemma）、`replay`、`remote` |
 | `cpu` | 裁剪、图像处理、解析、图生成 | 工作线程池 | `python`（线程或进程）、`remote` |
@@ -214,7 +214,7 @@ Togeari 像乱序 CPU 核心执行线程一样运行每张图像任务：一旦�
 |---|---|---|---|
 | `api` | vlm | 任意 OpenAI 兼容服务器或 Anthropic Messages API，每端点一个单元 | `flavour` 决定 JSON Schema 的放置方式并按服务类型关闭 Qwen3.5 思考；支持限流、健康检查、`X-GBC-Request` 摘要 |
 | `vllm` | vlm | 本进程内 vLLM `AsyncLLM`，每设备组一个单元 | 单元内跨设备张量并行；部署规划会计算其显存预留 |
-| `qwen35` | vlm | 专为此工作负载编写的 Qwen3.5 引擎（[示例](examples/qwen35/README.zh-CN.md)） | 状态槽与分页 KV 上的打包混合步骤、前缀快照、Triton 内核与参考实现计时竞速、解码 CUDA 图、xgrammar 遮罩及强制 token 跳跃、独立视觉处理阶段 |
+| `qwen35` | vlm | 专为此工作负载编写的 Qwen3.5 引擎（[kohakugbc_models/vlm/qwen35](src/kohakugbc_models/vlm/qwen35/README.zh-CN.md)） | 状态槽与分页 KV 上的打包混合步骤、前缀快照、Triton 内核与参考实现计时竞速、解码 CUDA 图、xgrammar 遮罩及强制 token 跳跃、独立视觉处理阶段 |
 | `torch` | detect | OWLv2（`google/owlv2-base-patch16-ensemble`，与 PoC 相同）或 SAM 3（`facebook/sam3`） | 每设备一个单元；OWLv2 使用 float16、批大小 1 时能完全复现 PoC 的检测框 |
 | `torch` | embed | EmbeddingGemma | 批量计算并归一化 |
 | `python` | cpu | Togeari 的 Python 工作者 | 线程或进程 |
@@ -326,7 +326,7 @@ src/kohakugbc/
   io/             数据源（folder、jsonl、trace）、输出端（graphs、memory）
   cli/            gbc 命令
 src/kohakugbc-rust/   Rust 图解析（kohakugbc._rs）
-examples/qwen35/      qwen35 引擎
+src/kohakugbc_models/vlm/qwen35/  qwen35 引擎
 configs/              机器与引擎的配置
 scripts/              轨迹录制、性能基准、文档插图
 docs/                 概念、指南、内部实现、性能
@@ -341,7 +341,7 @@ tests/                程序、图、机器、引擎；测试资源：录制的 
 | [使用指南](docs/zh-CN/guides/README.md) | 各引擎入口的配置、单 GPU、API 和多节点运行 |
 | [内部实现](docs/zh-CN/internals/README.md) | 执行机器、部署规划、跨节点引擎、程序与 PoC 的差异、轨迹、图解析 |
 | [性能测试](docs/zh-CN/performance/README.md) | 伪引擎和真实引擎下的执行机器、独立 VLM 引擎的性能 |
-| [Qwen3.5 引擎示例](examples/qwen35/README.zh-CN.md) | 配置、架构设计和测试 |
+| [kohakugbc_models/vlm/qwen35](src/kohakugbc_models/vlm/qwen35/README.zh-CN.md) | 配置、架构设计与测量 |
 
 ## 测试
 
@@ -349,7 +349,7 @@ tests/                程序、图、机器、引擎；测试资源：录制的 
 python -m pytest tests -q -m "not gpu and not serial and not weights" -n auto
 python -m pytest tests -q -m serial                   # wall-clock bounds, alone
 python -m pytest tests -q -m "gpu or weights"         # real models, on cuda:0
-QWEN35_MODEL=path/to/Qwen3.5-4B python -m pytest examples/qwen35/tests
+python -m pytest tests -q                             # 仅数据与格式检查（CPU）
 python scripts/bench/pseudo_machine.py                # the machine on pseudo engines
 python scripts/bench/real_machine.py configs/machine/qwen35_local.py --name local   # real engines
 python scripts/bench/vlm_units.py --trace runs/traces/poc30/text --name qwen35 --engine '{"entry": "qwen35", "model": "..."}'

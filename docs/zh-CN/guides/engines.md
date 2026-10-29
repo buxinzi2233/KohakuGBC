@@ -60,15 +60,15 @@ engines = {
 
 该单元使用模型聊天模板构造提示词（关闭思考模式），按 API 路径的相同方式解码图像，将回复约束为请求的 JSON Schema；取消的请求会在 vLLM 内中止。由于 vLLM 会通过创建子进程启动核心引擎，使用此入口构建机器的脚本需要 `if __name__ == "__main__":` 保护。
 
-## 进程内 VLM（qwen35 示例）
+## 进程内 VLM（qwen35）
 
-为这类工作负载专门开发的 Qwen3.5 引擎（`pip install -e examples/qwen35`；支持 Windows 和 Linux），每个设备一个单元：
+为这类工作负载专门开发的 Qwen3.5 引擎（`pip install "kohakugbc[qwen35]"`；支持 Windows 和 Linux），每个设备一个单元：
 
 ```python
 engines = {"vlm": {"entry": "qwen35", "model": "Qwen/Qwen3.5-4B", "memory": 0.65}}
 ```
 
-参数、设计与测试详见 [qwen35 示例](../../../examples/qwen35/README.zh-CN.md)。`configs/machine/qwen35_local.py` 使用该引擎在单 GPU 上运行完整执行机器。
+参数、设计与测试详见 [kohakugbc_models/vlm/qwen35](../../../src/kohakugbc_models/vlm/qwen35/README.zh-CN.md)。`configs/machine/qwen35_local.py` 使用该引擎在单 GPU 上运行完整执行机器。
 
 ## 视觉模型（torch）
 

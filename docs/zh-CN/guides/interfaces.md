@@ -5,7 +5,7 @@
 本页以当前源码为准，补齐已有[引擎指南](engines.md)、[执行机器](../internals/machine.md)、
 [图解析](../internals/graph.md)和[轨迹格式](../internals/traces.md)中的调用契约，不另造一套架构文档。
 面向运行 GBC、接入数据、消费图结果和编写引擎的调用者；内部节点算法、性能脚本以及
-`examples/qwen35` 的独立实现不作为本包稳定 API 逐项罗列。这里描述现有行为，不承诺额外的版本兼容保证。
+`src/kohakugbc_models/vlm/qwen35` 的实现不作为本包稳定 API 逐项罗列。这里描述现有行为，不承诺额外的版本兼容保证。
 
 ## 1. 入口与导出范围
 
